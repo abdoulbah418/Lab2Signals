@@ -1,42 +1,42 @@
-/* timer.c */
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
-#include <stdbool.h>
+#include <time.h>
 
-bool printTuring;
-clock_t time_start;
-int alarm_count;
+int turingFlag = 0;
+int numAlarm = 0;
 
-void sigalrmHandler(int signum)
+time_t start, stop;
+
+void alarmHandler(int signum)
 { //signal handler
   printf("Hello World!\n");
-  printTuring = true;
-  alarm_count += 1;
-  alarm(1);
-  // exit(1); //exit after printing
+  sleep(2);
+  turingFlag = 1;
+  numAlarm++;
 }
 
 void sigintHandler(int signum)
-{ //signal handler
-  printf("\nTime Elasped: %.2f seconds\n", (float)(clock() - time_start)/100);
-  printf("Alarm Count: %d\n", alarm_count);
+{
+  int timeTotal;
+  stop = time(NULL);
+  timeTotal = stop - start;
+  printf("The number of alarms is %d\n", numAlarm);
+  printf("Time elasped %ds\n", timeTotal);
   exit(1);
 }
 
 int main(int argc, char * argv[])
 {
-  time_start = clock();
-  signal(SIGALRM,sigalrmHandler); //register handler to handle SIGALRM
-  signal(SIGINT,sigintHandler); //register handler to handle SIGINT
-  alarm(1); //Schedule a SIGALRM for 1 second
-  while(true) { //busy wait for signal to be delivered
-    if (printTuring) {
-      printf("Turing was right!\n");
-      printTuring = false;
-    }
-    sleep(1);
+  signal(SIGALRM, alarmHandler); //register handler to handle SIGALRM
+  signal(SIGINT, sigintHandler);
+  start = time(NULL);
+  while(1){
+    turingFlag = 0;
+    alarm(2);
+    while(!turingFlag);
+    printf("Turing was right!\n");
   }
-  return 0; //never reached
+  return 0;
 }

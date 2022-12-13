@@ -3,28 +3,25 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
-#include <stdbool.h>
 
-bool printTuring;
+int turingFlag = 0;
 
-void handler(int signum)
+void alarmHandler(int signum)
 { //signal handler
   printf("Hello World!\n");
-  printTuring = true;
-  alarm(1);
-  // exit(1); //exit after printing
+  sleep(1);
+  turingFlag = 1;
 }
+
 
 int main(int argc, char * argv[])
 {
-  signal(SIGALRM,handler); //register handler to handle SIGALRM
-  alarm(1); //Schedule a SIGALRM for 1 second
-  while(true) { //busy wait for signal to be delivered
-    if (printTuring) {
-      printf("Turing was right!\n");
-      printTuring = false;
-    }
-    sleep(1);
+  signal(SIGALRM, alarmHandler); //register handler to handle SIGALRM
+  while(1) {
+    turingFlag = 0;
+    alarm(2);
+    while(!turingFlag);
+    printf("Turing was right!\n");
   }
-  return 0; //never reached
+  return 0;
 }
